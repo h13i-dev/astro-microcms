@@ -1,0 +1,97 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="プレビュー | Sample Blog">
+  <main>
+    <div class="container">
+      <p class="preview-banner">🔍 プレビューモード（下書き表示中）</p>
+      <div id="preview-root">
+        <p>読み込み中...</p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .preview-banner {
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    font-size: 0.9rem;
+  }
+</style>
+
+<script>
+  import { createClient } from 'microcms-js-sdk';
+
+  const client = createClient({
+    serviceDomain: import.meta.env.PUBLIC_MICROCMS_SERVICE_DOMAIN,
+    apiKey: import.meta.env.PUBLIC_MICROCMS_API_KEY,
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const contentId = params.get('contentId');
+  const draftKey = params.get('draftKey');
+  const root = document.getElementById('preview-root') as HTMLDivElement;
+
+  const escape = (s: string) =>
+    s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+    );
+
+  if (!contentId || !draftKey) {
+    root.innerHTML = '<p>contentId と draftKey が URL に必要です。</p>';
+  } else {
+    client
+      .getListDetail<{
+        title: string;
+        content: string;
+        category: { id: string; name: string };
+        tags: { id: string; name: string }[];
+        thumbnail?: { url: string; width: number; height: number };
+        publishedAt?: string;
+        createdAt: string;
+      }>({
+        endpoint: 'news',
+        contentId,
+        queries: { draftKey },
+      })
+      .then((news) => {
+        const date = (news.publishedAt ?? news.createdAt).slice(0, 10);
+        const dateDisplay = date.replaceAll('-', '.');
+        const thumbHtml = news.thumbnail
+          ? `<img src="${escape(news.thumbnail.url)}" alt="" class="article-thumb-main" width="${news.thumbnail.width}" height="${news.thumbnail.height}" />`
+          : '';
+        const tagsHtml = (news.tags ?? [])
+          .map(
+            (t) =>
+              `<li><a href="/tag/tag-${escape(t.id)}/" class="tag">${escape(t.name)}</a></li>`,
+          )
+          .join('');
+        const tagsSection =
+          news.tags && news.tags.length > 0
+            ? `<p class="article-footer__label">TAGS</p><ul class="tags">${tagsHtml}</ul>`
+            : '';
+
+        root.innerHTML = `
+          <article class="article-detail">
+            <header class="article-header">
+              <div class="article-meta">
+                <time datetime="${date}">${dateDisplay}</time>
+                <span class="badge badge--${escape(news.category.id)}">${escape(news.category.name)}</span>
+              </div>
+              <h1 class="article-title-main">${escape(news.title)}</h1>
+              ${thumbHtml}
+            </header>
+            <div class="article-body">${news.content}</div>
+            <footer class="article-footer">${tagsSection}</footer>
+          </article>
+        `;
+        document.title = `[プレビュー] ${news.title} | Sample Blog`;
+      })
+      .catch((err: Error) => {
+        root.innerHTML = `<p>プレビュー取得に失敗しました: ${escape(err.message)}</p>`;
+      });
+  }
+</script>

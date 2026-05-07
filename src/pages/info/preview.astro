@@ -1,0 +1,86 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="プレビュー | Sample Blog">
+  <main>
+    <div class="container">
+      <p class="preview-banner">🔍 プレビューモード（下書き表示中）</p>
+      <div id="preview-root">
+        <p>読み込み中...</p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .preview-banner {
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    font-size: 0.9rem;
+  }
+</style>
+
+<script>
+  import { createClient } from 'microcms-js-sdk';
+
+  const client = createClient({
+    serviceDomain: import.meta.env.PUBLIC_MICROCMS_SERVICE_DOMAIN,
+    apiKey: import.meta.env.PUBLIC_MICROCMS_API_KEY,
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const contentId = params.get('contentId');
+  const draftKey = params.get('draftKey');
+  const root = document.getElementById('preview-root') as HTMLDivElement;
+
+  const escape = (s: string) =>
+    s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+    );
+
+  if (!contentId || !draftKey) {
+    root.innerHTML = '<p>contentId と draftKey が URL に必要です。</p>';
+  } else {
+    client
+      .getListDetail<{
+        title: string;
+        link?: string;
+        content?: string;
+        publishedAt?: string;
+        createdAt: string;
+      }>({
+        endpoint: 'info',
+        contentId,
+        queries: { draftKey },
+      })
+      .then((info) => {
+        const date = (info.publishedAt ?? info.createdAt).slice(0, 10);
+        const dateDisplay = date.replaceAll('-', '.');
+        const linkSection = info.link
+          ? `<p>このお知らせは <a href="${escape(info.link)}">${escape(info.link)}</a> へリンクします。</p>`
+          : '';
+        const contentSection = info.content
+          ? `<div class="article-body">${info.content}</div>`
+          : '';
+
+        root.innerHTML = `
+          <article class="article-detail">
+            <header class="article-header">
+              <div class="article-meta">
+                <time datetime="${date}">${dateDisplay}</time>
+              </div>
+              <h1 class="article-title-main">${escape(info.title)}</h1>
+            </header>
+            ${linkSection}
+            ${contentSection}
+          </article>
+        `;
+        document.title = `[プレビュー] ${info.title} | Sample Blog`;
+      })
+      .catch((err: Error) => {
+        root.innerHTML = `<p>プレビュー取得に失敗しました: ${escape(err.message)}</p>`;
+      });
+  }
+</script>
