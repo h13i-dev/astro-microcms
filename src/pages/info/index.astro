@@ -9,7 +9,9 @@ const { contents: infoList } = await getInfoList({
 
 const items = infoList.map((info) => {
   const date = (info.publishedAt ?? info.createdAt).slice(0, 10);
-  const href = info.link ?? `/info/${info.id}/`;
+  const year = date.slice(0, 4);
+  const idSegment = info.id.slice(2);
+  const href = info.link ?? `/info/${year}/${idSegment}/`;
   const isExternal = /^https?:\/\//.test(href);
   return {
     href,

@@ -1,19 +1,28 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import Layout from '../../layouts/Layout.astro';
-import { getInfoList, getInfoDetail } from '../../library/microcms';
+import Layout from '../../../layouts/Layout.astro';
+import { getInfoList, getInfoDetail } from '../../../library/microcms';
 
 export const getStaticPaths = (async () => {
   const { contents } = await getInfoList({ limit: 100 });
   return contents
     .filter((info) => !info.link)
-    .map((info) => ({
-      params: { contentId: info.id },
-    }));
+    .map((info) => {
+      const year = (info.publishedAt ?? info.createdAt).slice(0, 4);
+      const idSegment = info.id.slice(2);
+      return {
+        params: { year, id: idSegment },
+        props: { contentId: info.id },
+      };
+    });
 }) satisfies GetStaticPaths;
 
-const { contentId } = Astro.params;
-const info = await getInfoDetail(contentId as string);
+interface Props {
+  contentId: string;
+}
+
+const { contentId } = Astro.props;
+const info = await getInfoDetail(contentId);
 
 const date = (info.publishedAt ?? info.createdAt).slice(0, 10);
 const dateDisplay = date.replaceAll('-', '.');
