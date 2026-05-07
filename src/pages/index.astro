@@ -1,82 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Card from '../components/Card.astro';
+import { getNewsList } from '../library/microcms';
 
-const articles = [
-  {
-    href: '/news/article-detail/',
-    title: '新製品「Sample Pro X1」を発表しました',
-    date: '2026-04-12',
-    tags: [
-      { label: '新製品', href: '/tag/tag-newproduct/' },
-      { label: 'トピックス', href: '/tag/tag-topics/' },
-    ],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '春の新製品発表会を開催します',
-    date: '2026-02-15',
-    tags: [
-      { label: 'イベント', href: '/tag/tag-event/' },
-      { label: '新製品', href: '/tag/tag-newproduct/' },
-    ],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '既存製品アップデート（v2.5）リリース',
-    date: '2026-01-30',
-    tags: [
-      { label: 'アップデート', href: '/tag/tag-update/' },
-      { label: '技術情報', href: '/tag/tag-tech/' },
-    ],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '技術カンファレンス2025登壇報告',
-    date: '2025-11-05',
-    tags: [
-      { label: 'イベント', href: '/tag/tag-event/' },
-      { label: '技術情報', href: '/tag/tag-tech/' },
-      { label: 'トピックス', href: '/tag/tag-topics/' },
-    ],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '新シリーズ「Sample Lite」発売のお知らせ',
-    date: '2025-09-18',
-    tags: [{ label: '新製品', href: '/tag/tag-newproduct/' }],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '新ブランドラインを発表',
-    date: '2025-04-01',
-    tags: [
-      { label: 'リブランド', href: '/tag/tag-rebrand/' },
-      { label: 'トピックス', href: '/tag/tag-topics/' },
-    ],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '第3回ユーザー会開催レポート',
-    date: '2024-10-22',
-    tags: [{ label: 'イベント', href: '/tag/tag-event/' }],
-  },
-  {
-    href: '/news/article-detail/',
-    title: '製品ラインナップ刷新のお知らせ',
-    date: '2024-07-15',
-    tags: [
-      { label: 'リブランド', href: '/tag/tag-rebrand/' },
-      { label: 'アップデート', href: '/tag/tag-update/' },
-    ],
-  },
-  {
-    href: '/news/article-detail/',
-    title: 'ベータユーザー募集セミナー開催',
-    date: '2024-02-20',
-    tags: [{ label: 'イベント', href: '/tag/tag-event/' }],
-  },
-];
+const { contents: newsList } = await getNewsList({
+  limit: 9,
+  orders: '-publishedAt',
+});
+
+const articles = newsList.map((n) => ({
+  href: `/news/${n.id}/`,
+  title: n.title,
+  date: (n.publishedAt ?? n.createdAt).slice(0, 10),
+  imgSrc: n.thumbnail?.url,
+  tags: n.tags.map((t) => ({
+    label: t.name,
+    href: `/tag/tag-${t.id}/`,
+  })),
+}));
 ---
 <Layout title="Sample Blog">
   <section class="hero">
@@ -100,17 +41,11 @@ const articles = [
             title={a.title}
             date={a.date}
             tags={a.tags}
+            imgSrc={a.imgSrc}
             titleLevel={3}
           />
         ))}
       </div>
-
-      <nav class="pagination" aria-label="ページ送り">
-        <span class="is-current">1</span>
-        <a href="#">2</a>
-        <a href="#">3</a>
-        <a href="#">→</a>
-      </nav>
     </div>
   </section>
 </Layout>

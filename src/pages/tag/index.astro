@@ -1,14 +1,24 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getTagsList, getNewsList } from '../../library/microcms';
 
-const tags = [
-  { href: '/tag/tag-newproduct/', label: '新製品', count: 3 },
-  { href: '/tag/tag-update/', label: 'アップデート', count: 2 },
-  { href: '/tag/tag-event/', label: 'イベント', count: 4 },
-  { href: '/tag/tag-tech/', label: '技術情報', count: 2 },
-  { href: '/tag/tag-topics/', label: 'トピックス', count: 3 },
-  { href: '/tag/tag-rebrand/', label: 'リブランド', count: 2 },
-];
+const [{ contents: tagsList }, { contents: allNews }] = await Promise.all([
+  getTagsList({ limit: 100 }),
+  getNewsList({ limit: 100, fields: 'tags' }),
+]);
+
+const tagCounts = new Map<string, number>();
+for (const news of allNews) {
+  for (const tag of news.tags) {
+    tagCounts.set(tag.id, (tagCounts.get(tag.id) ?? 0) + 1);
+  }
+}
+
+const tags = tagsList.map((t) => ({
+  href: `/tag/tag-${t.id}/`,
+  label: t.name,
+  count: tagCounts.get(t.id) ?? 0,
+}));
 ---
 <Layout title="タグ一覧 | Sample Blog">
   <main class="main">

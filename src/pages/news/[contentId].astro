@@ -1,0 +1,59 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Layout from '../../layouts/Layout.astro';
+import { getNewsList, getNewsDetail } from '../../library/microcms';
+
+export const getStaticPaths = (async () => {
+  const { contents } = await getNewsList({ limit: 100 });
+  return contents.map((news) => ({
+    params: { contentId: news.id },
+  }));
+}) satisfies GetStaticPaths;
+
+const { contentId } = Astro.params;
+const news = await getNewsDetail(contentId as string);
+
+const date = (news.publishedAt ?? news.createdAt).slice(0, 10);
+const dateDisplay = date.replaceAll('-', '.');
+---
+<Layout title={`${news.title} | Sample Blog`}>
+  <main>
+    <article class="article-detail container">
+      <header class="article-header">
+        <div class="article-meta">
+          <time datetime={date}>{dateDisplay}</time>
+          <span class:list={['badge', `badge--${news.category.id}`]}>{news.category.name}</span>
+        </div>
+        <h1 class="article-title-main">{news.title}</h1>
+        {news.thumbnail && (
+          <img
+            src={news.thumbnail.url}
+            alt=""
+            class="article-thumb-main"
+            width={news.thumbnail.width}
+            height={news.thumbnail.height}
+          />
+        )}
+      </header>
+
+      <div class="article-body" set:html={news.content}></div>
+
+      <footer class="article-footer">
+        {news.tags.length > 0 && (
+          <>
+            <p class="article-footer__label">TAGS</p>
+            <ul class="tags">
+              {news.tags.map((tag) => (
+                <li><a href={`/tag/tag-${tag.id}/`} class="tag">{tag.name}</a></li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        <nav class="article-nav" aria-label="記事ナビゲーション">
+          <a href="/news/">一覧へ戻る</a>
+        </nav>
+      </footer>
+    </article>
+  </main>
+</Layout>

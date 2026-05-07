@@ -1,0 +1,40 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Layout from '../../layouts/Layout.astro';
+import { getInfoList, getInfoDetail } from '../../library/microcms';
+
+export const getStaticPaths = (async () => {
+  const { contents } = await getInfoList({ limit: 100 });
+  return contents
+    .filter((info) => !info.link)
+    .map((info) => ({
+      params: { contentId: info.id },
+    }));
+}) satisfies GetStaticPaths;
+
+const { contentId } = Astro.params;
+const info = await getInfoDetail(contentId as string);
+
+const date = (info.publishedAt ?? info.createdAt).slice(0, 10);
+const dateDisplay = date.replaceAll('-', '.');
+---
+<Layout title={`${info.title} | Sample Blog`}>
+  <main>
+    <article class="article-detail container">
+      <header class="article-header">
+        <div class="article-meta">
+          <time datetime={date}>{dateDisplay}</time>
+        </div>
+        <h1 class="article-title-main">{info.title}</h1>
+      </header>
+
+      {info.content && <div class="article-body" set:html={info.content}></div>}
+
+      <footer class="article-footer">
+        <nav class="article-nav" aria-label="記事ナビゲーション">
+          <a href="/info/">一覧へ戻る</a>
+        </nav>
+      </footer>
+    </article>
+  </main>
+</Layout>

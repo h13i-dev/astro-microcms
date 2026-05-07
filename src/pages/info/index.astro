@@ -1,32 +1,30 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getInfoList } from '../../library/microcms';
 
-interface InfoItem {
-  href: string;
-  date: string;
-  title: string;
-}
+const { contents: infoList } = await getInfoList({
+  limit: 100,
+  orders: '-publishedAt',
+});
 
-const items: InfoItem[] = [
-  { href: '#', date: '2026-03-20', title: '公式サイトをリニューアルしました' },
-  { href: '#', date: '2026-01-10', title: '新年のご挨拶' },
-  { href: '#', date: '2025-12-20', title: '年末年始の営業時間について' },
-  { href: '#', date: '2025-10-15', title: '一部サービスの仕様変更について' },
-  { href: '#', date: '2025-06-07', title: 'サーバーメンテナンス実施のお知らせ' },
-  { href: '#', date: '2025-02-28', title: '個人情報保護方針の改定について' },
-  { href: '#', date: '2024-12-10', title: 'サポート窓口移転のお知らせ' },
-  { href: '#', date: '2024-08-30', title: '採用情報を更新しました' },
-  { href: '#', date: '2024-05-08', title: '新オフィス移転のお知らせ' },
-];
+const items = infoList.map((info) => {
+  const date = (info.publishedAt ?? info.createdAt).slice(0, 10);
+  const href = info.link ?? `/info/${info.id}/`;
+  const isExternal = /^https?:\/\//.test(href);
+  return {
+    href,
+    isExternal,
+    date,
+    year: date.slice(0, 4),
+    dateDisplay: date.replaceAll('-', '.'),
+    title: info.title,
+  };
+});
 
-const years = ['2026', '2025', '2024'];
-const initialYear = '2026';
-
-const enriched = items.map((item) => ({
-  ...item,
-  year: item.date.slice(0, 4),
-  dateDisplay: item.date.replaceAll('-', '.'),
-}));
+const years = Array.from(new Set(items.map((i) => i.year)))
+  .sort()
+  .reverse();
+const initialYear = years[0] ?? '';
 ---
 <Layout title="お知らせ | Sample Blog">
   <main class="main">
@@ -45,14 +43,20 @@ const enriched = items.map((item) => ({
       </div>
 
       <ul class="info-list">
-        {enriched.map((item) => (
+        {items.map((item) => (
           <li
             class:list={['info-item', { 'is-hidden': item.year !== initialYear }]}
             data-year={item.year}
           >
-            <a href={item.href} class="info-link">
+            <a
+              href={item.href}
+              class="info-link"
+              target={item.isExternal ? '_blank' : undefined}
+              rel={item.isExternal ? 'noopener noreferrer' : undefined}
+            >
               <time class="info-date" datetime={item.date}>{item.dateDisplay}</time>
               <span class="info-title">{item.title}</span>
+              {item.isExternal && <span class="info-external" aria-label="外部リンク">↗</span>}
             </a>
           </li>
         ))}
