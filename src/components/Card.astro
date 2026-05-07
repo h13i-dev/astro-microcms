@@ -1,0 +1,42 @@
+---
+interface CardTag {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  href: string;
+  title: string;
+  date: string;
+  tags?: CardTag[];
+  imgSrc?: string;
+  titleLevel?: 2 | 3;
+}
+
+const {
+  href,
+  title,
+  date,
+  tags = [],
+  imgSrc = 'https://placehold.jp/600x400.png',
+  titleLevel = 2,
+} = Astro.props;
+
+const [year, month, day] = date.split('-');
+const dateDisplay = `${year}年${month}月${day}日`;
+const TitleTag = `h${titleLevel}` as 'h2' | 'h3';
+---
+<article class="card">
+  <img src={imgSrc} alt="" class="card__thumb" />
+  <div class="card__body">
+    <TitleTag class="card__title"><a href={href}>{title}</a></TitleTag>
+    {tags.length > 0 && (
+      <ul class="card__tags">
+        {tags.map((t) => (
+          <li><a href={t.href} class="tag">{t.label}</a></li>
+        ))}
+      </ul>
+    )}
+    <time class="card__date" datetime={date}>{dateDisplay}</time>
+  </div>
+</article>

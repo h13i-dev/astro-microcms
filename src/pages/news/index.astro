@@ -1,0 +1,175 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ArticleListItem from '../../components/ArticleListItem.astro';
+
+interface Article {
+  href: string;
+  date: string;
+  category: 'product' | 'event';
+  title: string;
+  excerpt: string;
+}
+
+const articles: Article[] = [
+  {
+    href: '/news/article-detail/',
+    date: '2026-04-12',
+    category: 'product',
+    title: '新製品「Sample Pro X1」を発表しました',
+    excerpt: '次世代のフラッグシップモデルとして「Sample Pro X1」を発表しました。従来比2倍の処理速度と新機能を搭載。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2026-02-15',
+    category: 'event',
+    title: '春の新製品発表会を開催します',
+    excerpt: '2026年4月10日にオンライン形式で新製品発表会を開催。事前登録受付中です。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2026-01-30',
+    category: 'product',
+    title: '既存製品アップデート（v2.5）リリース',
+    excerpt: '使い勝手の改善と新機能を追加するメジャーアップデートをリリースしました。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2025-11-05',
+    category: 'event',
+    title: '技術カンファレンス2025登壇報告',
+    excerpt: '国内最大規模の技術カンファレンスにて、CTOが基調講演を行いました。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2025-09-18',
+    category: 'product',
+    title: '新シリーズ「Sample Lite」発売のお知らせ',
+    excerpt: 'エントリーモデル向けの新シリーズを2025年10月1日より販売開始します。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2025-04-01',
+    category: 'product',
+    title: '新ブランドラインを発表',
+    excerpt: '創業10周年を記念し、新たなブランドラインを発表しました。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2024-10-22',
+    category: 'event',
+    title: '第3回ユーザー会開催レポート',
+    excerpt: '全国から200名以上のユーザー様にご参加いただきました。当日の様子を公開します。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2024-07-15',
+    category: 'product',
+    title: '製品ラインナップ刷新のお知らせ',
+    excerpt: '既存ラインナップを整理し、新たな3シリーズに再編しました。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2024-02-20',
+    category: 'event',
+    title: 'ベータユーザー募集セミナー開催',
+    excerpt: '新サービスのベータユーザー向けセミナーを開催します。参加無料です。',
+  },
+];
+
+const years = ['2026', '2025', '2024'];
+const categories: Array<{ key: 'all' | 'product' | 'event'; label: string }> = [
+  { key: 'all', label: '全て' },
+  { key: 'product', label: '製品' },
+  { key: 'event', label: 'イベント' },
+];
+
+const initialYear = '2026';
+---
+<Layout title="記事アーカイブ | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">記事アーカイブ</h1>
+      <p class="page-lead">過去の記事を年別・カテゴリ別に絞り込めます。</p>
+
+      <div class="year-tabs" role="tablist">
+        {years.map((y) => (
+          <button
+            class:list={['year-tab', { 'is-active': y === initialYear }]}
+            data-year={y}
+            role="tab"
+          >{y}</button>
+        ))}
+      </div>
+
+      <div class="category-filter">
+        {categories.map((c) => (
+          <button
+            class:list={['cat-btn', { 'is-active': c.key === 'all' }]}
+            data-cat={c.key}
+          >{c.label}</button>
+        ))}
+      </div>
+
+      <ul class="article-list">
+        {articles.map((a) => (
+          <ArticleListItem
+            href={a.href}
+            date={a.date}
+            category={a.category}
+            title={a.title}
+            excerpt={a.excerpt}
+            isHidden={a.date.slice(0, 4) !== initialYear}
+          />
+        ))}
+      </ul>
+
+      <p class="empty" hidden id="empty-state">該当する記事はありません。</p>
+
+      <nav class="pagination" aria-label="ページ送り">
+        <span class="is-current">1</span>
+        <a href="#">2</a>
+        <a href="#">→</a>
+      </nav>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const yearTabs = document.querySelectorAll<HTMLButtonElement>('.year-tab');
+  const catBtns = document.querySelectorAll<HTMLButtonElement>('.cat-btn');
+  const items = document.querySelectorAll<HTMLLIElement>('.article-item');
+  const emptyState = document.getElementById('empty-state') as HTMLParagraphElement | null;
+
+  let currentYear = '2026';
+  let currentCat = 'all';
+
+  function applyFilter() {
+    let visibleCount = 0;
+    items.forEach((item) => {
+      const matchYear = item.dataset.year === currentYear;
+      const matchCat = currentCat === 'all' || item.dataset.cat === currentCat;
+      const visible = matchYear && matchCat;
+      item.classList.toggle('is-hidden', !visible);
+      if (visible) visibleCount++;
+    });
+    if (emptyState) emptyState.hidden = visibleCount > 0;
+  }
+
+  yearTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      yearTabs.forEach((t) => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      if (tab.dataset.year) currentYear = tab.dataset.year;
+      applyFilter();
+    });
+  });
+
+  catBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      catBtns.forEach((b) => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      if (btn.dataset.cat) currentCat = btn.dataset.cat;
+      applyFilter();
+    });
+  });
+</script>

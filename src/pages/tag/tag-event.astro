@@ -1,0 +1,53 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Card from '../../components/Card.astro';
+
+const articles = [
+  {
+    href: '/news/article-detail/',
+    title: '春の新製品発表会を開催します',
+    date: '2026-02-15',
+    tags: [
+      { label: 'イベント', href: '/tag/tag-event/' },
+      { label: '新製品', href: '/tag/tag-newproduct/' },
+    ],
+  },
+  {
+    href: '/news/article-detail/',
+    title: '技術カンファレンス2025登壇報告',
+    date: '2025-11-05',
+    tags: [
+      { label: 'イベント', href: '/tag/tag-event/' },
+      { label: '技術情報', href: '/tag/tag-tech/' },
+      { label: 'トピックス', href: '/tag/tag-topics/' },
+    ],
+  },
+  {
+    href: '/news/article-detail/',
+    title: '第3回ユーザー会開催レポート',
+    date: '2024-10-22',
+    tags: [{ label: 'イベント', href: '/tag/tag-event/' }],
+  },
+  {
+    href: '/news/article-detail/',
+    title: 'ベータユーザー募集セミナー開催',
+    date: '2024-02-20',
+    tags: [{ label: 'イベント', href: '/tag/tag-event/' }],
+  },
+];
+---
+<Layout title="タグ: イベント | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <p class="page-lead" style="margin-bottom: 4px;"><a href="/tag/" style="color: inherit;">タグ</a></p>
+      <h1 class="page-title"># イベント</h1>
+      <p class="page-lead">「イベント」タグの付いた記事の一覧です。</p>
+
+      <div class="card-grid">
+        {articles.map((a) => (
+          <Card href={a.href} title={a.title} date={a.date} tags={a.tags} />
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>

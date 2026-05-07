@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Card from '../../components/Card.astro';
+
+const articles = [
+  {
+    href: '/news/article-detail/',
+    title: '新製品「Sample Pro X1」を発表しました',
+    date: '2026-04-12',
+    tags: [
+      { label: '新製品', href: '/tag/tag-newproduct/' },
+      { label: 'トピックス', href: '/tag/tag-topics/' },
+    ],
+  },
+  {
+    href: '/news/article-detail/',
+    title: '技術カンファレンス2025登壇報告',
+    date: '2025-11-05',
+    tags: [
+      { label: 'イベント', href: '/tag/tag-event/' },
+      { label: '技術情報', href: '/tag/tag-tech/' },
+      { label: 'トピックス', href: '/tag/tag-topics/' },
+    ],
+  },
+  {
+    href: '/news/article-detail/',
+    title: '新ブランドラインを発表',
+    date: '2025-04-01',
+    tags: [
+      { label: 'リブランド', href: '/tag/tag-rebrand/' },
+      { label: 'トピックス', href: '/tag/tag-topics/' },
+    ],
+  },
+];
+---
+<Layout title="タグ: トピックス | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <p class="page-lead" style="margin-bottom: 4px;"><a href="/tag/" style="color: inherit;">タグ</a></p>
+      <h1 class="page-title"># トピックス</h1>
+      <p class="page-lead">「トピックス」タグの付いた記事の一覧です。</p>
+
+      <div class="card-grid">
+        {articles.map((a) => (
+          <Card href={a.href} title={a.title} date={a.date} tags={a.tags} />
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>

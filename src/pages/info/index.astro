@@ -1,0 +1,89 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+interface InfoItem {
+  href: string;
+  date: string;
+  title: string;
+}
+
+const items: InfoItem[] = [
+  { href: '#', date: '2026-03-20', title: '公式サイトをリニューアルしました' },
+  { href: '#', date: '2026-01-10', title: '新年のご挨拶' },
+  { href: '#', date: '2025-12-20', title: '年末年始の営業時間について' },
+  { href: '#', date: '2025-10-15', title: '一部サービスの仕様変更について' },
+  { href: '#', date: '2025-06-07', title: 'サーバーメンテナンス実施のお知らせ' },
+  { href: '#', date: '2025-02-28', title: '個人情報保護方針の改定について' },
+  { href: '#', date: '2024-12-10', title: 'サポート窓口移転のお知らせ' },
+  { href: '#', date: '2024-08-30', title: '採用情報を更新しました' },
+  { href: '#', date: '2024-05-08', title: '新オフィス移転のお知らせ' },
+];
+
+const years = ['2026', '2025', '2024'];
+const initialYear = '2026';
+
+const enriched = items.map((item) => ({
+  ...item,
+  year: item.date.slice(0, 4),
+  dateDisplay: item.date.replaceAll('-', '.'),
+}));
+---
+<Layout title="お知らせ | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">お知らせ</h1>
+      <p class="page-lead">サービス・会社からの各種お知らせを掲載しています。</p>
+
+      <div class="year-tabs" role="tablist">
+        {years.map((y) => (
+          <button
+            class:list={['year-tab', { 'is-active': y === initialYear }]}
+            data-year={y}
+            role="tab"
+          >{y}</button>
+        ))}
+      </div>
+
+      <ul class="info-list">
+        {enriched.map((item) => (
+          <li
+            class:list={['info-item', { 'is-hidden': item.year !== initialYear }]}
+            data-year={item.year}
+          >
+            <a href={item.href} class="info-link">
+              <time class="info-date" datetime={item.date}>{item.dateDisplay}</time>
+              <span class="info-title">{item.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="empty" hidden id="empty-state">該当年のお知らせはありません。</p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const yearTabs = document.querySelectorAll<HTMLButtonElement>('.year-tab');
+  const items = document.querySelectorAll<HTMLLIElement>('.info-item');
+  const emptyState = document.getElementById('empty-state') as HTMLParagraphElement | null;
+
+  function applyFilter(year: string) {
+    let visibleCount = 0;
+    items.forEach((item) => {
+      const visible = item.dataset.year === year;
+      item.classList.toggle('is-hidden', !visible);
+      if (visible) visibleCount++;
+    });
+    if (emptyState) emptyState.hidden = visibleCount > 0;
+  }
+
+  yearTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      yearTabs.forEach((t) => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      const year = tab.dataset.year;
+      if (year) applyFilter(year);
+    });
+  });
+</script>

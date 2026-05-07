@@ -1,0 +1,28 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const tags = [
+  { href: '/tag/tag-newproduct/', label: '新製品', count: 3 },
+  { href: '/tag/tag-update/', label: 'アップデート', count: 2 },
+  { href: '/tag/tag-event/', label: 'イベント', count: 4 },
+  { href: '/tag/tag-tech/', label: '技術情報', count: 2 },
+  { href: '/tag/tag-topics/', label: 'トピックス', count: 3 },
+  { href: '/tag/tag-rebrand/', label: 'リブランド', count: 2 },
+];
+---
+<Layout title="タグ一覧 | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">タグ一覧</h1>
+      <p class="page-lead">記事に付与されているタグの一覧。クリックすると該当タグの記事を表示します。</p>
+
+      <div class="tag-list-large">
+        {tags.map((t) => (
+          <a href={t.href} class="tag-chip-large">
+            {t.label} <span class="tag-count">{t.count}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ArticleListItem from '../../components/ArticleListItem.astro';
+
+const articles = [
+  {
+    href: '/news/article-detail/',
+    date: '2026-02-15',
+    title: '春の新製品発表会を開催します',
+    excerpt: '2026年4月10日にオンライン形式で新製品発表会を開催。事前登録受付中です。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2025-11-05',
+    title: '技術カンファレンス2025登壇報告',
+    excerpt: '国内最大規模の技術カンファレンスにて、CTOが基調講演を行いました。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2024-10-22',
+    title: '第3回ユーザー会開催レポート',
+    excerpt: '全国から200名以上のユーザー様にご参加いただきました。当日の様子を公開します。',
+  },
+  {
+    href: '/news/article-detail/',
+    date: '2024-02-20',
+    title: 'ベータユーザー募集セミナー開催',
+    excerpt: '新サービスのベータユーザー向けセミナーを開催します。参加無料です。',
+  },
+];
+---
+<Layout title="イベントカテゴリ | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <p class="page-lead" style="margin-bottom: 4px;">カテゴリ</p>
+      <h1 class="page-title">イベント</h1>
+      <p class="page-lead">セミナー・カンファレンス・ユーザー会などイベント情報をお届けします。</p>
+
+      <ul class="article-list">
+        {articles.map((a) => (
+          <ArticleListItem
+            href={a.href}
+            date={a.date}
+            category="event"
+            title={a.title}
+            excerpt={a.excerpt}
+          />
+        ))}
+      </ul>
+
+      <nav class="pagination" aria-label="ページ送り">
+        <span class="is-current">1</span>
+      </nav>
+    </div>
+  </main>
+</Layout>

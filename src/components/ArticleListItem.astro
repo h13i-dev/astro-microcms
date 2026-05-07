@@ -1,0 +1,33 @@
+---
+interface Props {
+  href: string;
+  date: string;
+  category: 'product' | 'event';
+  title: string;
+  excerpt: string;
+  isHidden?: boolean;
+}
+
+const CATEGORY_LABEL: Record<Props['category'], string> = {
+  product: '製品',
+  event: 'イベント',
+};
+
+const { href, date, category, title, excerpt, isHidden = false } = Astro.props;
+const dateDisplay = date.replaceAll('-', '.');
+const year = date.slice(0, 4);
+---
+<li
+  class:list={['article-item', { 'is-hidden': isHidden }]}
+  data-year={year}
+  data-cat={category}
+>
+  <a href={href} class="article-link">
+    <time class="article-date" datetime={date}>{dateDisplay}</time>
+    <span class:list={['badge', `badge--${category}`]}>{CATEGORY_LABEL[category]}</span>
+    <div>
+      <h2 class="article-title">{title}</h2>
+      <p class="article-excerpt">{excerpt}</p>
+    </div>
+  </a>
+</li>

@@ -1,0 +1,47 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const keywords = [
+  {
+    href: '/keyword/keyword-pickup/',
+    badgeClass: 'badge--product',
+    title: 'ピックアップ',
+    excerpt: '編集部が選ぶ注目記事を集めた特集。',
+  },
+  {
+    href: '/keyword/keyword-tech/',
+    badgeClass: 'badge--info',
+    title: '技術情報',
+    excerpt: '製品技術や仕組みに関する解説記事。',
+  },
+  {
+    href: '/keyword/keyword-case/',
+    badgeClass: 'badge--event',
+    title: '導入事例',
+    excerpt: 'お客様の導入事例・活用シーンの紹介。',
+  },
+];
+---
+<Layout title="キーワード | Sample Blog">
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">キーワード</h1>
+      <p class="page-lead">テーマごとに記事をまとめた特集ページ。気になるキーワードから記事を探せます。</p>
+
+      <div class="card-grid">
+        {keywords.map((k) => (
+          <a href={k.href} class="card">
+            <img src="https://placehold.jp/600x400.png" alt="" class="card__thumb" />
+            <div class="card__body">
+              <div class="card__meta">
+                <span class:list={['badge', k.badgeClass]}>特集</span>
+              </div>
+              <h2 class="card__title">{k.title}</h2>
+              <p class="article-excerpt" style="margin-top: 8px;">{k.excerpt}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>
