@@ -1,0 +1,84 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import Layout from '../../../layouts/Layout.astro';
+import Card from '../../../components/Card.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { getTagsList, getNewsList, type TagContent } from '../../../library/microcms';
+
+interface Article {
+  href: string;
+  title: string;
+  date: string;
+  imgSrc?: string;
+  tags: { label: string; href: string }[];
+}
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const { contents: tags } = await getTagsList({ limit: 100 });
+
+  const allPaths = await Promise.all(
+    tags.map(async (tag) => {
+      const { contents: newsList } = await getNewsList({
+        filters: `tags[contains]${tag.id}`,
+        orders: '-publishedAt',
+        limit: 100,
+      });
+
+      const articles: Article[] = newsList.map((n) => ({
+        href: `/news/${n.id}/`,
+        title: n.title,
+        date: (n.publishedAt ?? n.createdAt).slice(0, 10),
+        imgSrc: n.thumbnail?.url,
+        tags: n.tags.map((t) => ({
+          label: t.name,
+          href: `/tag/tag-${t.id}/`,
+        })),
+      }));
+
+      return paginate(articles, {
+        pageSize: 9,
+        params: { tagId: tag.id },
+        props: { tag },
+      });
+    }),
+  );
+
+  return allPaths.flat();
+}) satisfies GetStaticPaths;
+
+interface Props {
+  tag: TagContent;
+  page: Page<Article>;
+}
+
+const { tagId } = Astro.params;
+const { tag, page } = Astro.props;
+const baseUrl = `/tag/tag-${tagId}/`;
+---
+<Layout title={`タグ: ${tag.name} | Sample Blog`}>
+  <main class="main">
+    <div class="container">
+      <p class="page-lead" style="margin-bottom: 4px;"><a href="/tag/" style="color: inherit;">タグ</a></p>
+      <h1 class="page-title"># {tag.name}</h1>
+      <p class="page-lead">「{tag.name}」タグの付いた記事の一覧です。</p>
+
+      {page.data.length > 0 ? (
+        <div class="card-grid">
+          {page.data.map((a) => (
+            <Card
+              href={a.href}
+              title={a.title}
+              date={a.date}
+              tags={a.tags}
+              imgSrc={a.imgSrc}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">該当する記事はありません。</p>
+      )}
+
+      <Pagination page={page} baseUrl={baseUrl} />
+    </div>
+  </main>
+</Layout>

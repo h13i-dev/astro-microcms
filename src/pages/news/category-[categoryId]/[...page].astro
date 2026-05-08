@@ -1,0 +1,84 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import Layout from '../../../layouts/Layout.astro';
+import ArticleListItem from '../../../components/ArticleListItem.astro';
+import Pagination from '../../../components/Pagination.astro';
+import {
+  getCategoriesList,
+  getNewsList,
+  type CategoryContent,
+} from '../../../library/microcms';
+
+type CategoryId = 'product' | 'event';
+
+interface Article {
+  href: string;
+  date: string;
+  title: string;
+  excerpt: string;
+}
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const { contents: categories } = await getCategoriesList({ limit: 100 });
+
+  const allPaths = await Promise.all(
+    categories.map(async (cat) => {
+      const { contents: newsList } = await getNewsList({
+        filters: `category[equals]${cat.id}`,
+        orders: '-publishedAt',
+        limit: 100,
+      });
+
+      const articles: Article[] = newsList.map((n) => ({
+        href: `/news/${n.id}/`,
+        date: (n.publishedAt ?? n.createdAt).slice(0, 10),
+        title: n.title,
+        excerpt: n.description,
+      }));
+
+      return paginate(articles, {
+        pageSize: 9,
+        params: { categoryId: cat.id },
+        props: { category: cat },
+      });
+    }),
+  );
+
+  return allPaths.flat();
+}) satisfies GetStaticPaths;
+
+interface Props {
+  category: CategoryContent;
+  page: Page<Article>;
+}
+
+const { categoryId } = Astro.params;
+const { category, page } = Astro.props;
+const baseUrl = `/news/category-${categoryId}/`;
+---
+<Layout title={`${category.name}カテゴリ | Sample Blog`}>
+  <main class="main">
+    <div class="container">
+      <p class="page-lead" style="margin-bottom: 4px;">カテゴリ</p>
+      <h1 class="page-title">{category.name}</h1>
+
+      {page.data.length > 0 ? (
+        <ul class="article-list">
+          {page.data.map((a) => (
+            <ArticleListItem
+              href={a.href}
+              date={a.date}
+              category={categoryId as CategoryId}
+              title={a.title}
+              excerpt={a.excerpt}
+            />
+          ))}
+        </ul>
+      ) : (
+        <p class="empty">該当する記事はありません。</p>
+      )}
+
+      <Pagination page={page} baseUrl={baseUrl} />
+    </div>
+  </main>
+</Layout>

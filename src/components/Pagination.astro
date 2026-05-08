@@ -1,0 +1,34 @@
+---
+import type { Page } from 'astro';
+
+interface Props {
+  page: Page<unknown>;
+  baseUrl: string;
+}
+
+const { page, baseUrl } = Astro.props;
+
+const pageUrl = (n: number) => (n === 1 ? baseUrl : `${baseUrl}${n}/`);
+const pageNumbers = Array.from({ length: page.lastPage }, (_, i) => i + 1);
+---
+{page.lastPage > 1 && (
+  <nav class="pagination" aria-label="ページネーション">
+    {page.url.prev ? (
+      <a href={page.url.prev} rel="prev" aria-label="前のページ">‹</a>
+    ) : (
+      <span aria-hidden="true">‹</span>
+    )}
+    {pageNumbers.map((n) => (
+      n === page.currentPage ? (
+        <span class="is-current" aria-current="page">{n}</span>
+      ) : (
+        <a href={pageUrl(n)} aria-label={`${n}ページ目`}>{n}</a>
+      )
+    ))}
+    {page.url.next ? (
+      <a href={page.url.next} rel="next" aria-label="次のページ">›</a>
+    ) : (
+      <span aria-hidden="true">›</span>
+    )}
+  </nav>
+)}
