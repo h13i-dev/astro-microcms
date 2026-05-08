@@ -555,6 +555,28 @@ a.tag:hover {
   text-underline-offset: 4px;
 }
 
+/* ===== microCMS リッチエディタのカスタムクラス =====
+   microCMS管理画面で設定したカスタムクラスは
+   <span data-custom-class="..." data-custom-class-value="値"> として出力される。
+   data-custom-class はハッシュで変動するため、安定している value 側でセレクトする。 */
+.article-body [data-custom-class-value="sample"] {
+  color: #d63384;
+  font-weight: 600;
+  background: #fff3cd;
+  padding: 0 6px;
+  border-radius: 3px;
+}
+
+.article-body [data-custom-class-value="marker"] {
+  background: linear-gradient(transparent 60%, #fff176 60%);
+  padding: 0 2px;
+}
+
+.article-body [data-custom-class-value="caution"] {
+  color: #b00020;
+  font-weight: 600;
+}
+
 .article-footer {
   margin-top: 64px;
   padding-top: 32px;
