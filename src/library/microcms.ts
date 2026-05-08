@@ -31,6 +31,28 @@ export interface News {
 }
 export type NewsContent = News & MicroCMSContentId & MicroCMSDate;
 
+/**
+ * microCMSリッチエディタが出力する `data-custom-class-value="xxx"` を
+ * `class="xxx"` に変換し、CSS側で `.xxx` セレクタを使えるようにする。
+ * 既存の class 属性がある場合は値を末尾に追記する。
+ */
+export const transformRichText = (html: string): string => {
+  if (!html) return html;
+  return html.replace(
+    /<([a-zA-Z][\w-]*)([^>]*?)\sdata-custom-class-value="([^"]+)"([^>]*)>/g,
+    (_match, tag, before, value, after) => {
+      const rest = `${before}${after}`;
+      const classMatch = rest.match(/\sclass="([^"]*)"/);
+      if (classMatch) {
+        const merged = `${classMatch[1]} ${value}`.trim();
+        const replaced = rest.replace(/\sclass="[^"]*"/, ` class="${merged}"`);
+        return `<${tag}${replaced}>`;
+      }
+      return `<${tag}${rest} class="${value}">`;
+    },
+  );
+};
+
 export const getNewsList = async (queries?: MicroCMSQueries) =>
   client.getList<News>({ endpoint: "news", queries });
 

@@ -40,6 +40,21 @@ import Layout from '../../layouts/Layout.astro';
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
     );
 
+  /** microCMSリッチエディタの data-custom-class-value="xxx" を class="xxx" に変換 */
+  const transformRichText = (html: string): string =>
+    html.replace(
+      /<([a-zA-Z][\w-]*)([^>]*?)\sdata-custom-class-value="([^"]+)"([^>]*)>/g,
+      (_m, tag, before, value, after) => {
+        const rest = `${before}${after}`;
+        const classMatch = rest.match(/\sclass="([^"]*)"/);
+        if (classMatch) {
+          const merged = `${classMatch[1]} ${value}`.trim();
+          return `<${tag}${rest.replace(/\sclass="[^"]*"/, ` class="${merged}"`)}>`;
+        }
+        return `<${tag}${rest} class="${value}">`;
+      },
+    );
+
   if (!contentId || !draftKey) {
     root.innerHTML = '<p>contentId と draftKey が URL に必要です。</p>';
   } else {
@@ -84,7 +99,7 @@ import Layout from '../../layouts/Layout.astro';
               <h1 class="article-title-main">${escape(news.title)}</h1>
               ${thumbHtml}
             </header>
-            <div class="article-body">${news.content}</div>
+            <div class="article-body">${transformRichText(news.content)}</div>
             <footer class="article-footer">${tagsSection}</footer>
           </article>
         `;

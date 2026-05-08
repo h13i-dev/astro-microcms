@@ -1,7 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Layout from '../../layouts/Layout.astro';
-import { getNewsList, getNewsDetail } from '../../library/microcms';
+import { getNewsList, getNewsDetail, transformRichText } from '../../library/microcms';
 
 export const getStaticPaths = (async () => {
   const { contents } = await getNewsList({ limit: 100 });
@@ -15,6 +15,7 @@ const news = await getNewsDetail(contentId as string);
 
 const date = (news.publishedAt ?? news.createdAt).slice(0, 10);
 const dateDisplay = date.replaceAll('-', '.');
+const contentHtml = transformRichText(news.content);
 ---
 <Layout title={`${news.title} | Sample Blog`}>
   <main>
@@ -36,7 +37,7 @@ const dateDisplay = date.replaceAll('-', '.');
         )}
       </header>
 
-      <div class="article-body" set:html={news.content}></div>
+      <div class="article-body" set:html={contentHtml}></div>
 
       <footer class="article-footer">
         {news.tags.length > 0 && (
