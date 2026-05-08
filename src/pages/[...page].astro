@@ -1,0 +1,73 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Pagination from '../components/Pagination.astro';
+import { getNewsList } from '../library/microcms';
+
+interface Article {
+  href: string;
+  title: string;
+  date: string;
+  imgSrc?: string;
+  tags: { label: string; href: string }[];
+}
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const { contents: newsList } = await getNewsList({
+    limit: 100,
+    orders: '-publishedAt',
+  });
+
+  const articles: Article[] = newsList.map((n) => ({
+    href: `/news/${n.id}/`,
+    title: n.title,
+    date: (n.publishedAt ?? n.createdAt).slice(0, 10),
+    imgSrc: n.thumbnail?.url,
+    tags: n.tags.map((t) => ({
+      label: t.name,
+      href: `/tag/tag-${t.id}/`,
+    })),
+  }));
+
+  return paginate(articles, { pageSize: 9 });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page<Article>;
+}
+
+const { page } = Astro.props;
+---
+<Layout title="Sample Blog">
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero__title">Sample Blog</h1>
+      <p class="hero__lead">製品・イベント・技術情報をお届けします。</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="section__title">記事一覧</h2>
+        <a href="/news/" class="section__more">アーカイブを見る →</a>
+      </div>
+
+      <div class="card-grid">
+        {page.data.map((a) => (
+          <Card
+            href={a.href}
+            title={a.title}
+            date={a.date}
+            tags={a.tags}
+            imgSrc={a.imgSrc}
+            titleLevel={3}
+          />
+        ))}
+      </div>
+
+      <Pagination page={page} baseUrl="/" />
+    </div>
+  </section>
+</Layout>
